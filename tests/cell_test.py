@@ -1,6 +1,13 @@
+from typing import Generator, List, Any
+
 import pytest
+from pytest import FixtureRequest
 
 import gspread
+from gspread.cell import Cell
+from gspread.client import Client
+from gspread.spreadsheet import Spreadsheet
+from gspread.worksheet import Worksheet
 
 from .conftest import GspreadTest
 
@@ -8,8 +15,13 @@ from .conftest import GspreadTest
 class CellTest(GspreadTest):
     """Test for gspread.Cell."""
 
+    spreadsheet: Spreadsheet
+    sheet: Worksheet
+
     @pytest.fixture(scope="function", autouse=True)
-    def init(self, client, request):
+    def init(
+        self: "CellTest", client: Client, request: FixtureRequest
+    ) -> Generator[None, None, None]:
         # User current test name in spreadsheet name
         name = self.get_temporary_spreadsheet_title(request.node.name)
         CellTest.spreadsheet = client.create(name)
@@ -20,7 +32,7 @@ class CellTest(GspreadTest):
         client.del_spreadsheet(CellTest.spreadsheet.id)
 
     @pytest.mark.vcr()
-    def test_properties(self):
+    def test_properties(self) -> None:
         sg = self._sequence_generator()
         update_value = next(sg)
         self.sheet.update_acell("A1", update_value)
@@ -30,7 +42,7 @@ class CellTest(GspreadTest):
         self.assertEqual(cell.col, 1)
 
     @pytest.mark.vcr()
-    def test_equality(self):
+    def test_equality(self) -> None:
         sg = self._sequence_generator()
         update_value = next(sg)
         self.sheet.update_acell("A1", update_value)
@@ -45,7 +57,7 @@ class CellTest(GspreadTest):
         self.assertNotEqual(cell, another_cell)
 
     @pytest.mark.vcr()
-    def test_numeric_value(self):
+    def test_numeric_value(self) -> None:
         numeric_value = 1.0 / 1024
         # Use a formula here to avoid issues with differing decimal marks:
         self.sheet.update_acell("A1", "= 1 / 1024")
@@ -66,7 +78,7 @@ class CellTest(GspreadTest):
         self.assertEqual(cell.numeric_value, None)
 
     @pytest.mark.vcr()
-    def test_a1_value(self):
+    def test_a1_value(self) -> None:
         cell = self.sheet.cell(4, 4)
         self.assertEqual(cell.address, "D4")
         self.sheet.update_acell("B1", "Dummy")
@@ -81,12 +93,12 @@ class CellTest(GspreadTest):
         self.assertEqual((cell.row, cell.col), (1, 1))
 
     @pytest.mark.vcr()
-    def test_merge_cells(self):
+    def test_merge_cells(self) -> None:
         self.sheet.update([[42, 43], [43, 44]], "A1:B2")
 
         # test merge rows
         self.sheet.merge_cells(1, 1, 2, 2, merge_type="MERGE_ROWS")
-        merges = self.sheet._get_sheet_property("merges", [])
+        merges: List[Any] = self.sheet._get_sheet_property("merges", [])
         self.assertEqual(len(merges), 2)
 
         # test merge all
@@ -100,7 +112,7 @@ class CellTest(GspreadTest):
         self.assertEqual(len(merges), 0)
 
     @pytest.mark.vcr()
-    def test_define_named_range(self):
+    def test_define_named_range(self) -> None:
         # define the named range
         range_name = "TestDefineNamedRange"
         self.sheet.define_named_range("A1:B2", range_name)
@@ -159,7 +171,7 @@ class CellTest(GspreadTest):
         self.assertEqual(named_range["range"]["endColumnIndex"], 2)
 
     @pytest.mark.vcr()
-    def test_delete_named_range(self):
+    def test_delete_named_range(self) -> None:
         # define a named range
         result = self.sheet.define_named_range("A1:B2", "TestDeleteNamedRange")
 

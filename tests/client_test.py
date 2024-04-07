@@ -1,8 +1,12 @@
 import time
+from typing import Generator
 
 import pytest
+from pytest import FixtureRequest
 
 import gspread
+from gspread.client import Client
+from gspread.spreadsheet import Spreadsheet
 
 from .conftest import GspreadTest
 
@@ -10,8 +14,13 @@ from .conftest import GspreadTest
 class ClientTest(GspreadTest):
     """Test for gspread.client."""
 
+    gc: Client
+    spreadsheet: Spreadsheet
+
     @pytest.fixture(scope="function", autouse=True)
-    def init(self, client, request):
+    def init(
+        self: "ClientTest", client: Client, request: FixtureRequest
+    ) -> Generator[None, None, None]:
         ClientTest.gc = client
         name = self.get_temporary_spreadsheet_title(request.node.name)
         ClientTest.spreadsheet = client.create(name)
@@ -21,12 +30,12 @@ class ClientTest(GspreadTest):
         client.del_spreadsheet(ClientTest.spreadsheet.id)
 
     @pytest.mark.vcr()
-    def test_no_found_exeption(self):
+    def test_no_found_exeption(self) -> None:
         noexistent_title = "Please don't use this phrase as a name of a sheet."
         self.assertRaises(gspread.SpreadsheetNotFound, self.gc.open, noexistent_title)
 
     @pytest.mark.vcr()
-    def test_list_spreadsheet_files(self):
+    def test_list_spreadsheet_files(self) -> None:
         res = self.gc.list_spreadsheet_files()
         self.assertIsInstance(res, list)
         for f in res:
@@ -37,7 +46,7 @@ class ClientTest(GspreadTest):
             self.assertIn("modifiedTime", f)
 
     @pytest.mark.vcr()
-    def test_openall(self):
+    def test_openall(self) -> None:
         spreadsheet_list = self.gc.openall()
         spreadsheet_list2 = self.gc.openall(spreadsheet_list[0].title)
 
@@ -48,13 +57,13 @@ class ClientTest(GspreadTest):
             self.assertIsInstance(s, gspread.Spreadsheet)
 
     @pytest.mark.vcr()
-    def test_create(self):
+    def test_create(self) -> None:
         title = "Test Spreadsheet"
         new_spreadsheet = self.gc.create(title)
         self.assertIsInstance(new_spreadsheet, gspread.Spreadsheet)
 
     @pytest.mark.vcr()
-    def test_copy(self):
+    def test_copy(self) -> None:
         original_spreadsheet = self.spreadsheet
         spreadsheet_copy = self.gc.copy(original_spreadsheet.id)
         self.assertIsInstance(spreadsheet_copy, gspread.Spreadsheet)
@@ -64,7 +73,7 @@ class ClientTest(GspreadTest):
         self.assertEqual(original_metadata["sheets"], copy_metadata["sheets"])
 
     @pytest.mark.vcr()
-    def test_import_csv(self):
+    def test_import_csv(self) -> None:
         spreadsheet = self.spreadsheet
 
         sg = self._sequence_generator()
@@ -82,14 +91,14 @@ class ClientTest(GspreadTest):
         self.assertEqual(sh.sheet1.get_all_values(), rows)
 
     @pytest.mark.vcr()
-    def test_access_non_existing_spreadsheet(self):
+    def test_access_non_existing_spreadsheet(self) -> None:
         with self.assertRaises(gspread.exceptions.SpreadsheetNotFound):
             self.gc.open_by_key("test")
         with self.assertRaises(gspread.exceptions.SpreadsheetNotFound):
             self.gc.open_by_url("https://docs.google.com/spreadsheets/d/test")
 
     @pytest.mark.vcr()
-    def test_open_all_has_metadata(self):
+    def test_open_all_has_metadata(self) -> None:
         """tests all spreadsheets are opened
         and that they all have metadata"""
         spreadsheets = self.gc.openall()
@@ -100,7 +109,7 @@ class ClientTest(GspreadTest):
             self.assertTrue(spreadsheet.timezone)
 
     @pytest.mark.vcr()
-    def test_open_by_key_has_metadata(self):
+    def test_open_by_key_has_metadata(self) -> None:
         """tests open_by_key has metadata"""
         spreadsheet = self.gc.open_by_key(self.spreadsheet.id)
         self.assertIsInstance(spreadsheet, gspread.Spreadsheet)
@@ -109,7 +118,7 @@ class ClientTest(GspreadTest):
         self.assertTrue(spreadsheet.timezone)
 
     @pytest.mark.vcr()
-    def test_open_by_name_has_metadata(self):
+    def test_open_by_name_has_metadata(self) -> None:
         """tests open has metadata"""
         spreadsheet = self.gc.open(self.spreadsheet.title)
         self.assertIsInstance(spreadsheet, gspread.Spreadsheet)
@@ -118,14 +127,14 @@ class ClientTest(GspreadTest):
         self.assertTrue(spreadsheet.timezone)
 
     @pytest.mark.vcr()
-    def test_access_private_spreadsheet(self):
+    def test_access_private_spreadsheet(self) -> None:
         """tests that opening private spreadsheet returns SpreadsheetPermissionDenied"""
         private_id = "1jIKzPs8LsiZZdLdeMEP-5ZIHw6RkjiOmj1LrJN706Yc"
         with self.assertRaises(PermissionError):
             self.gc.open_by_key(private_id)
 
     @pytest.mark.vcr()
-    def test_client_export_spreadsheet(self):
+    def test_client_export_spreadsheet(self) -> None:
         """Test the export feature of a spreadsheet.
 
         JSON cannot serialize binary data (like PDF or OpenSpreadsheetFormat)
@@ -149,7 +158,7 @@ class ClientTest(GspreadTest):
         )
 
     @pytest.mark.vcr()
-    def test_add_timeout(self):
+    def test_add_timeout(self) -> None:
         """Test the method to set the HTTP request timeout"""
 
         # So far it took 0.17 seconds to fetch the metadata with my connection.
