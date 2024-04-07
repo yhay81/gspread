@@ -37,6 +37,7 @@ from .utils import (
     Dimension,
     GridRangeType,
     InsertDataOption,
+    JSONResponse,
     MergeType,
     PasteOrientation,
     PasteType,
@@ -75,7 +76,6 @@ CellFormat = TypedDict(
 
 BatchData = TypedDict("BatchData", {"range": str, "values": List[List[Any]]})
 
-JSONResponse = MutableMapping[str, Any]
 ValueRangeType = TypeVar("ValueRangeType", bound="ValueRange")
 
 
@@ -764,7 +764,7 @@ class Worksheet:
         self,
         cell_list: List[Cell],
         value_input_option: ValueInputOption = ValueInputOption.raw,
-    ) -> Mapping[str, Any]:
+    ) -> JSONResponse:
         """Updates many cells at once.
 
         :param list cell_list: List of :class:`gspread.cell.Cell` objects to update.
@@ -2398,7 +2398,7 @@ class Worksheet:
         return res
 
     @cast_to_a1_notation
-    def set_basic_filter(self, name: Optional[str] = None) -> Any:
+    def set_basic_filter(self, name: Optional[str] = None) -> JSONResponse:
         """Add a basic filter to the worksheet. If a range or boundaries
         are passed, the filter will be limited to the given range.
 
@@ -2541,7 +2541,9 @@ class Worksheet:
         )
 
     @cast_to_a1_notation
-    def merge_cells(self, name: str, merge_type: str = MergeType.merge_all) -> Any:
+    def merge_cells(
+        self, name: str, merge_type: str = MergeType.merge_all
+    ) -> JSONResponse:
         """Merge cells.
 
         :param str name: Range name in A1 notation, e.g. 'A1:A5'.

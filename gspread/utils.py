@@ -38,6 +38,8 @@ if TYPE_CHECKING:
     from .cell import Cell
 
 
+JSONResponse = Dict[str, Any]
+
 MAGIC_NUMBER = 64
 CELL_ADDR_RE = re.compile(r"([A-Za-z]+)([1-9]\d*)")
 A1_ADDR_ROW_COL_RE = re.compile(r"([A-Za-z]+)?([1-9]\d*)?$")

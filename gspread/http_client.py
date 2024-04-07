@@ -40,7 +40,7 @@ from .urls import (
     SPREADSHEET_VALUES_CLEAR_URL,
     SPREADSHEET_VALUES_URL,
 )
-from .utils import ExportFormat, convert_credentials, quote
+from .utils import ExportFormat, JSONResponse, convert_credentials, quote
 
 ParamsType = MutableMapping[str, Optional[Union[str, int, bool, float, List[str]]]]
 
@@ -127,7 +127,7 @@ class HTTPClient:
         else:
             raise APIError(response)
 
-    def batch_update(self, id: str, body: Optional[Mapping[str, Any]]) -> Any:
+    def batch_update(self, id: str, body: Optional[Mapping[str, Any]]) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>:batchUpdate <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/batchUpdate>`_.
 
         :param dict body: `Batch Update Request body <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/batchUpdate#request-body>`_.
@@ -146,7 +146,7 @@ class HTTPClient:
         range: str,
         params: Optional[ParamsType] = None,
         body: Optional[Mapping[str, Any]] = None,
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `PUT spreadsheets/<ID>/values/<range> <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to update.
@@ -175,7 +175,7 @@ class HTTPClient:
 
     def values_append(
         self, id: str, range: str, params: ParamsType, body: Optional[Mapping[str, Any]]
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:append <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_
@@ -191,7 +191,7 @@ class HTTPClient:
         r = self.request("post", url, params=params, json=body)
         return r.json()
 
-    def values_clear(self, id: str, range: str) -> Any:
+    def values_clear(self, id: str, range: str) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:clear <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/clear>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to clear.
@@ -209,7 +209,7 @@ class HTTPClient:
         id: str,
         params: Optional[ParamsType] = None,
         body: Optional[Mapping[str, Any]] = None,
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:batchClear`
 
         :param dict params: (optional) `Values Batch Clear Query parameters <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchClear#path-parameters>`_.
@@ -222,7 +222,7 @@ class HTTPClient:
 
     def values_get(
         self, id: str, range: str, params: Optional[ParamsType] = None
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `GET spreadsheets/<ID>/values/<range> <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to retrieve.
@@ -238,7 +238,7 @@ class HTTPClient:
 
     def values_batch_get(
         self, id: str, ranges: List[str], params: Optional[ParamsType] = None
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:batchGet <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchGet>`_.
 
         :param list ranges: List of ranges in the `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to retrieve.
@@ -257,7 +257,7 @@ class HTTPClient:
 
     def values_batch_update(
         self, id: str, body: Optional[Mapping[str, Any]] = None
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:batchUpdate <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchUpdate>`_.
 
         :param dict body: (optional) `Values Batch Update Request body <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchUpdate#request-body>`_.
@@ -268,7 +268,9 @@ class HTTPClient:
         r = self.request("post", url, json=body)
         return r.json()
 
-    def spreadsheets_get(self, id: str, params: Optional[ParamsType] = None) -> Any:
+    def spreadsheets_get(
+        self, id: str, params: Optional[ParamsType] = None
+    ) -> JSONResponse:
         """A method stub that directly calls `spreadsheets.get <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/get>`_."""
         url = SPREADSHEET_URL % id
         r = self.request("get", url, params=params)
@@ -276,7 +278,7 @@ class HTTPClient:
 
     def spreadsheets_sheets_copy_to(
         self, id: str, sheet_id: int, destination_spreadsheet_id: str
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets.sheets.copyTo <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.sheets/copyTo>`_."""
         url = SPREADSHEET_SHEETS_COPY_TO_URL % (id, sheet_id)
 
@@ -286,7 +288,7 @@ class HTTPClient:
 
     def fetch_sheet_metadata(
         self, id: str, params: Optional[ParamsType] = None
-    ) -> Mapping[str, Any]:
+    ) -> JSONResponse:
         """Similar to :method spreadsheets_get:`gspread.http_client.spreadsheets_get`,
         get the spreadsheet form the API but by default **does not get the cells data**.
         It only retrieve the the metadata from the spreadsheet.
@@ -306,7 +308,7 @@ class HTTPClient:
 
         return r.json()
 
-    def get_file_drive_metadata(self, id: str) -> Any:
+    def get_file_drive_metadata(self, id: str) -> JSONResponse:
         """Get the metadata from the Drive API for a specific file
         This method is mainly here to retrieve the create/update time
         of a file (these metadata are only accessible from the Drive API).
@@ -471,7 +473,7 @@ class HTTPClient:
         params: ParamsType = {"supportsAllDrives": True}
         self.request("delete", url, params=params)
 
-    def import_csv(self, file_id: str, data: Union[str, bytes]) -> Any:
+    def import_csv(self, file_id: str, data: Union[str, bytes]) -> JSONResponse:
         """Imports data into the first page of the spreadsheet.
 
         :param str data: A CSV string of data.

@@ -15,7 +15,7 @@ from .cell import Cell
 from .exceptions import WorksheetNotFound
 from .http_client import HTTPClient, ParamsType
 from .urls import DRIVE_FILES_API_V3_URL, SPREADSHEET_DRIVE_URL
-from .utils import ExportFormat, finditem
+from .utils import ExportFormat, JSONResponse, finditem
 from .worksheet import Worksheet
 
 
@@ -89,7 +89,7 @@ class Spreadsheet:
             self.id,
         )
 
-    def batch_update(self, body: Mapping[str, Any]) -> Any:
+    def batch_update(self, body: Mapping[str, Any]) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>:batchUpdate <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/batchUpdate>`_.
 
         :param dict body: `Batch Update Request body <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/batchUpdate#request-body>`_.
@@ -102,7 +102,7 @@ class Spreadsheet:
 
     def values_append(
         self, range: str, params: ParamsType, body: Mapping[str, Any]
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:append <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_
@@ -116,7 +116,7 @@ class Spreadsheet:
         """
         return self.client.values_append(self.id, range, params, body)
 
-    def values_clear(self, range: str) -> Any:
+    def values_clear(self, range: str) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:clear <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/clear>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to clear.
@@ -131,7 +131,7 @@ class Spreadsheet:
         self,
         params: Optional[ParamsType] = None,
         body: Optional[Mapping[str, Any]] = None,
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:batchClear`
 
         :param dict params: (optional) `Values Batch Clear Query parameters <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchClear#path-parameters>`_.
@@ -140,7 +140,9 @@ class Spreadsheet:
         """
         return self.client.values_batch_clear(self.id, params, body)
 
-    def values_get(self, range: str, params: Optional[ParamsType] = None) -> Any:
+    def values_get(
+        self, range: str, params: Optional[ParamsType] = None
+    ) -> JSONResponse:
         """Lower-level method that directly calls `GET spreadsheets/<ID>/values/<range> <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to retrieve.
@@ -154,7 +156,7 @@ class Spreadsheet:
 
     def values_batch_get(
         self, ranges: List[str], params: Optional[ParamsType] = None
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:batchGet <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchGet>`_.
 
         :param list ranges: List of ranges in the `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to retrieve.
@@ -169,7 +171,7 @@ class Spreadsheet:
         range: str,
         params: Optional[ParamsType] = None,
         body: Optional[Mapping[str, Any]] = None,
-    ) -> Any:
+    ) -> JSONResponse:
         """Lower-level method that directly calls `PUT spreadsheets/<ID>/values/<range> <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update>`_.
 
         :param str range: The `A1 notation <https://developers.google.com/sheets/api/guides/concepts#a1_notation>`_ of the values to update.
@@ -194,7 +196,9 @@ class Spreadsheet:
         """
         return self.client.values_update(self.id, range, params=params, body=body)
 
-    def values_batch_update(self, body: Optional[Mapping[str, Any]] = None) -> Any:
+    def values_batch_update(
+        self, body: Optional[Mapping[str, Any]] = None
+    ) -> JSONResponse:
         """Lower-level method that directly calls `spreadsheets/<ID>/values:batchUpdate <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchUpdate>`_.
 
         :param dict body: (optional) `Values Batch Update Request body <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchUpdate#request-body>`_.
@@ -203,7 +207,7 @@ class Spreadsheet:
         """
         return self.client.values_batch_update(self.id, body=body)
 
-    def _spreadsheets_get(self, params: Optional[ParamsType] = None) -> Any:
+    def _spreadsheets_get(self, params: Optional[ParamsType] = None) -> JSONResponse:
         """A method stub that directly calls `spreadsheets.get <https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/get>`_."""
         return self.client.spreadsheets_get(self.id, params=params)
 
@@ -215,9 +219,7 @@ class Spreadsheet:
             self.id, sheet_id, destination_spreadsheet_id
         )
 
-    def fetch_sheet_metadata(
-        self, params: Optional[ParamsType] = None
-    ) -> Mapping[str, Any]:
+    def fetch_sheet_metadata(self, params: Optional[ParamsType] = None) -> JSONResponse:
         """Similar to :method spreadsheets_get:`gspread.http_client.spreadsheets_get`,
         get the spreadsheet form the API but by default **does not get the cells data**.
         It only retrieve the the metadata from the spreadsheet.
@@ -412,7 +414,7 @@ class Spreadsheet:
             new_sheet_name=new_sheet_name,
         )
 
-    def del_worksheet(self, worksheet: Worksheet) -> Any:
+    def del_worksheet(self, worksheet: Worksheet) -> JSONResponse:
         """Deletes a worksheet from a spreadsheet.
 
         :param worksheet: The worksheet to be deleted.
@@ -422,7 +424,7 @@ class Spreadsheet:
 
         return self.client.batch_update(self.id, body)
 
-    def del_worksheet_by_id(self, worksheet_id: Union[str, int]) -> Any:
+    def del_worksheet_by_id(self, worksheet_id: Union[str, int]) -> JSONResponse:
         """
         Deletes a Worksheet by id
         """
@@ -437,7 +439,7 @@ class Spreadsheet:
 
     def reorder_worksheets(
         self, worksheets_in_desired_order: Iterable[Worksheet]
-    ) -> Any:
+    ) -> JSONResponse:
         """Updates the ``index`` property of each Worksheet to reflect
         its index in the provided sequence of Worksheets.
 
@@ -651,7 +653,7 @@ class Spreadsheet:
             "namedRanges", []
         )
 
-    def update_title(self, title: str) -> Any:
+    def update_title(self, title: str) -> JSONResponse:
         """Renames the spreadsheet.
 
         :param str title: A new title.
@@ -671,7 +673,7 @@ class Spreadsheet:
         self._properties["title"] = title
         return res
 
-    def update_timezone(self, timezone: str) -> Any:
+    def update_timezone(self, timezone: str) -> JSONResponse:
         """Updates the current spreadsheet timezone.
         Can be any timezone in CLDR format such as "America/New_York"
         or a custom time zone such as GMT-07:00.
@@ -692,7 +694,7 @@ class Spreadsheet:
         self._properties["timeZone"] = timezone
         return res
 
-    def update_locale(self, locale: str) -> Any:
+    def update_locale(self, locale: str) -> JSONResponse:
         """Update the locale of the spreadsheet.
         Can be any of the ISO 639-1 language codes, such as: de, fr, en, ...
         Or an ISO 639-2 if no ISO 639-1 exists.
